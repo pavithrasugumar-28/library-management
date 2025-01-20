@@ -1,0 +1,175 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+struct Book {
+    string title;
+    string author;
+    int pages;
+    bool issued;
+    Book* next;
+};
+
+class Bookshop {
+private:
+    Book* bookList;
+    Book* issuedBooks;
+
+public:
+    Bookshop() {
+        bookList = nullptr;
+        issuedBooks = nullptr;
+    }
+
+    void addBook() {
+        Book* newBook = new Book;
+        cout << "Enter Book Title: ";
+        cin.ignore();
+        getline(cin, newBook->title);
+        cout << "Enter Author: ";
+        getline(cin, newBook->author);
+        cout << "Enter Number of Pages: ";
+        cin >> newBook->pages;
+        newBook->issued = false;
+        newBook->next = bookList;
+        bookList = newBook;
+        cout << "Book added successfully!" << endl;
+    }
+
+    void displayBooks() {
+        if (bookList == nullptr) {
+            cout << "No books available!" << endl;
+            return;
+        }
+        Book* temp = bookList;
+        while (temp != nullptr) {
+            cout << "\nTitle: " << temp->title;
+            cout << "\nAuthor: " << temp->author;
+            cout << "\nPages: " << temp->pages;
+            cout << "\nIssued: " << (temp->issued ? "Yes" : "No") << endl;
+            temp = temp->next;
+        }
+    }
+
+    void issueBook() {
+        string title;
+        cout << "Enter the title of the book to issue: ";
+        cin.ignore();
+        getline(cin, title);
+        Book* temp = bookList;
+        while (temp != nullptr) {
+            if (temp->title == title && !temp->issued) {
+                temp->issued = true;
+                Book* issuedBook = new Book;
+                *issuedBook = *temp;
+                issuedBook->next = issuedBooks;
+                issuedBooks = issuedBook;
+                cout << "Book issued successfully!" << endl;
+                return;
+            }
+            temp = temp->next;
+        }
+        cout << "Book not available or already issued!" << endl;
+    }
+
+    void returnBook() {
+        string title;
+        cout << "Enter the title of the book to return: ";
+        cin.ignore();
+        getline(cin, title);
+        Book* temp = issuedBooks;
+        Book* prev = nullptr;
+        while (temp != nullptr) {
+            if (temp->title == title) {
+                if (prev == nullptr) {
+                    issuedBooks = temp->next;
+                } else {
+                    prev->next = temp->next;
+                }
+                Book* original = bookList;
+                while (original != nullptr) {
+                    if (original->title == title) {
+                        original->issued = false;
+                        break;
+                    }
+                    original = original->next;
+                }
+                delete temp;
+                cout << "Book returned successfully!" << endl;
+                return;
+            }
+            prev = temp;
+            temp = temp->next;
+        }
+        cout << "No such issued book found!" << endl;
+    }
+
+    void displayIssuedBooks() {
+        if (issuedBooks == nullptr) {
+            cout << "No books are currently issued!" << endl;
+            return;
+        }
+        Book* temp = issuedBooks;
+        while (temp != nullptr) {
+            cout << "\nIssued Book Title: " << temp->title;
+            cout << "\nIssued to: " << temp->author;
+            cout << "\nPages: " << temp->pages << endl;
+            temp = temp->next;
+        }
+    }
+
+    ~Bookshop() {
+        while (bookList != nullptr) {
+            Book* temp = bookList;
+            bookList = bookList->next;
+            delete temp;
+        }
+        while (issuedBooks != nullptr) {
+            Book* temp = issuedBooks;
+            issuedBooks = issuedBooks->next;
+            delete temp;
+        }
+    }
+};
+
+int main() {
+    Bookshop shop;
+    int choice;
+
+    do {
+        cout << "\n--- Bookshop Management System ---";
+        cout << "\n1. Add Book";
+        cout << "\n2. Display Books";
+        cout << "\n3. Issue Book";
+        cout << "\n4. Return Book";
+        cout << "\n5. Display Issued Books";
+        cout << "\n6. Exit";
+        cout << "\nEnter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+        case 1:
+            shop.addBook();
+            break;
+        case 2:
+            shop.displayBooks();
+            break;
+        case 3:
+            shop.issueBook();
+            break;
+        case 4:
+            shop.returnBook();
+            break;
+        case 5:
+            shop.displayIssuedBooks();
+            break;
+        case 6:
+            cout << "Exiting the system..." << endl;
+            break;
+        default:
+            cout << "Invalid choice! Please try again." << endl;
+        }
+    } while (choice != 6);
+
+    return 0;
+}
